@@ -88,16 +88,18 @@ func main() {
 		fmt.Println(res[i].i, res[i].j)
 	}
 	fmt.Println(".")
-	for i := 0; i < n; i++ {
-		for j := 0; j < m; j++ {
-			if sumPaths[i][j] == -1 {
-				fmt.Print(0, " ")
-			} else {
-				fmt.Print(sumPaths[i][j], " ")
+	/*
+		for i := 0; i < n; i++ {
+			for j := 0; j < m; j++ {
+				if sumPaths[i][j] == -1 {
+					fmt.Print(0, " ")
+				} else {
+					fmt.Print(sumPaths[i][j], " ")
+				}
 			}
+			fmt.Println()
 		}
-		fmt.Println()
-	}
+	*/
 }
 
 /*
