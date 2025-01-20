@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"math"
+	"os"
 )
 
 type coor struct {
@@ -13,7 +13,11 @@ func main() {
 	var (
 		n, m, stI, stJ, fnI, fnJ int
 	)
-	fmt.Scan(&n, &m)
+	_, err := fmt.Scan(&n, &m)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Invalid input: ", err)
+		os.Exit(1)
+	}
 	matrix := make([][]int, n)
 
 	for i := range matrix {
@@ -21,58 +25,57 @@ func main() {
 	}
 	for i := 0; i < n; i++ {
 		for j := 0; j < m; j++ {
-			fmt.Scan(&matrix[i][j])
+			_, err = fmt.Scan(&matrix[i][j])
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Invalid input: ", err)
+				os.Exit(1)
+			}
 		}
 	}
-	fmt.Scan(&stI, &stJ, &fnI, &fnJ)
+	_, err = fmt.Scan(&stI, &stJ, &fnI, &fnJ)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Invalid input: ", err)
+		os.Exit(1)
+	}
+
 	sumPaths := make([][]int, n)
 	parentCoors := make([][]coor, n)
 	for i := 0; i < n; i++ {
 		sumPaths[i] = make([]int, m)
 		for j := 0; j < m; j++ {
-			sumPaths[i][j] = math.MaxInt
+			if matrix[i][j] != 0 {
+				sumPaths[i][j] = -1
+			}
 		}
 		parentCoors[i] = make([]coor, m)
 		for j := 0; j < m; j++ {
 			parentCoors[i][j] = coor{-1, -1}
 		}
 	}
-	que := make([]coor, 0)
-
-	que = append(que, coor{stI, stJ})
 	sumPaths[stI][stJ] = matrix[stI][stJ]
+
+	que := make([]coor, 0)
+	que = append(que, coor{stI, stJ})
 	for len(que) > 0 {
 		curr := que[0]
 		i, j := curr.i, curr.j
-		if j < m-1 && matrix[i][j+1] != 0 {
-			if sumPaths[i][j]+matrix[i][j+1] < sumPaths[i][j+1] {
-				sumPaths[i][j+1] = sumPaths[i][j] + matrix[i][j+1]
-				parentCoors[i][j+1] = coor{i, j}
-				que = append(que, coor{i, j + 1})
-			}
-		}
-		if i < n-1 && matrix[i+1][j] != 0 {
-			if sumPaths[i][j]+matrix[i+1][j] < sumPaths[i+1][j] {
-				sumPaths[i+1][j] = sumPaths[i][j] + matrix[i+1][j]
-				parentCoors[i+1][j] = coor{i, j}
-				que = append(que, coor{i + 1, j})
-			}
-		}
-		if j > 0 && matrix[i][j-1] != 0 {
-			if sumPaths[i][j]+matrix[i][j-1] < sumPaths[i][j-1] {
-				sumPaths[i][j-1] = sumPaths[i][j] + matrix[i][j-1]
-				parentCoors[i][j-1] = coor{i, j}
-				que = append(que, coor{i, j - 1})
-			}
-		}
-		if i > 0 && matrix[i-1][j] != 0 {
-			if sumPaths[i][j]+matrix[i-1][j] < sumPaths[i-1][j] {
-				sumPaths[i-1][j] = sumPaths[i][j] + matrix[i-1][j]
-				parentCoors[i-1][j] = coor{i, j}
-				que = append(que, coor{i - 1, j})
+		directions := [][]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
+		for _, direct := range directions {
+			nextI, nextJ := i+direct[0], j+direct[1]
+			if nextI >= 0 && nextI < n && nextJ >= 0 && nextJ < m && matrix[nextI][nextJ] != 0 {
+				if sumPaths[nextI][nextJ] == -1 || sumPaths[i][j]+matrix[nextI][nextJ] < sumPaths[nextI][nextJ] {
+					sumPaths[nextI][nextJ] = sumPaths[i][j] + matrix[nextI][nextJ]
+					parentCoors[nextI][nextJ] = coor{i, j}
+					que = append(que, coor{nextI, nextJ})
+				}
 			}
 		}
 		que = que[1:]
+	}
+
+	if sumPaths[fnI][fnJ] == -1 {
+		fmt.Fprintln(os.Stderr, "No path found for finish")
+		os.Exit(1)
 	}
 
 	res := make([]coor, 0)
@@ -87,7 +90,7 @@ func main() {
 	fmt.Println(".")
 	for i := 0; i < n; i++ {
 		for j := 0; j < m; j++ {
-			if sumPaths[i][j] == math.MaxInt {
+			if sumPaths[i][j] == -1 {
 				fmt.Print(0, " ")
 			} else {
 				fmt.Print(sumPaths[i][j], " ")
@@ -127,4 +130,11 @@ func main() {
 0 0 0 1 0 0 1
 1 0 0 1 1 1 1
 1 1 2 6
+
+3 3
+1 1 1
+1 1 0
+1 0 2
+0 0 2 2
+
 */
